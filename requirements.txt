@@ -2,5 +2,4 @@ streamlit
 numpy
 pandas
 pygwalker
-streamlit_gsheets
-
+st-gsheets-connection
