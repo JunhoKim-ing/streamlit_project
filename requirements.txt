@@ -1,6 +1,7 @@
 streamlit
+numpy==1.26.4
 pandas
-pygwalker
 st-gsheets-connection
 streamlit-authenticator
-yaml
+
+
