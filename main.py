@@ -44,6 +44,8 @@ def main():
             st.error(e)
         if config["credentials"]["usernames"][st.session_state["name"]]["email"] in config["pre-authorized"]["emails"]:
             admin()
+        else:
+            viewer()
 
         authenticator.logout()
 
