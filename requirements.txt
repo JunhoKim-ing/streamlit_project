@@ -4,3 +4,4 @@ pygwalker
 st-gsheets-connection
 streamlit-authenticator
 yaml
+
