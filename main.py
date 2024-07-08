@@ -17,19 +17,25 @@ authenticator = stauth.Authenticate(
     config['pre-authorized']
     )
 
-
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 SEX_TYPES = ["Male", "Female", "Others"]
 
 
 def read_data():
-    data = conn.read(worksheet="sheet1", usecols=list(range(6)), ttl=3600)
-    return data.dropna(how="all")
+    data = conn.read(worksheet="sheet1", usecols=list(range(6)), ttl=5)
+    data = data.dropna(how="all")
+    data['Date of Birth'] = pd.to_datetime(data['Date of Birth'], errors='coerce').dt.strftime('%Y/%m/%d')
+    data['Student ID'] = data['Student ID'].astype(str)
+    data['Student ID'] = data['Student ID'].apply(lambda x: x.split('.')[0] if '.' in x else x)
+    return data
 
 def write_data(data):
+    data['Date of Birth'] = pd.to_datetime(data['Date of Birth'], errors='coerce').dt.strftime('%Y/%m/%d')
+    data['Student ID'] = data['Student ID'].astype(str)
+    data['Student ID'] = data['Student ID'].apply(lambda x: x.split('.')[0] if '.' in x else x)
     conn.write(data)
-
+    
 def main():
     if st.session_state["authentication_status"]:
         st.write(f'Welcome *{st.session_state["name"]}*')
@@ -60,36 +66,47 @@ def main():
 
 def add_data(data):
     st.header("Add New Student")
+    required_fields = ["Name", "Student ID", "Sex", "Age", "Date of Birth"]
+
     with st.form("Add New Student"):
-        name = st.text_input("Name*")
-        student_id = st.text_input("Student ID*")
-        sex = st.selectbox("Sex*", options=SEX_TYPES, index=None)
-        age = st.number_input("Age*", min_value=0)
-        date_of_birth = st.date_input(label="Date of Birth", value=datetime.date(2000, 1, 1), min_value=datetime.date(1940,1,1))
-        additional_notes = st.text_area(label="Additional Notes")
+        inputs = {
+            "Name": st.text_input("Name*"),
+            "Student ID": st.text_input("Student ID*"),
+            "Sex": st.selectbox("Sex*", options=SEX_TYPES, index=None),
+            "Age": st.number_input("Age*", min_value=0, max_value=120),
+            "Date of Birth": st.date_input(
+                label="Date of Birth",
+                value=datetime.date(2000, 1, 1),
+                min_value=datetime.date(1950, 1, 1),
+                max_value=datetime.date.today()
+            ),
+            "Additional Notes": st.text_area(label="Additional Notes")
+        }
 
         st.markdown("**required*")
 
         if st.form_submit_button("Submit"):
-            if not name or not student_id or not sex or not age or not date_of_birth:
-                st.warning("Ensure all required information are filled.")
-                st.stop()
-            elif data["Student ID"].astype(str).str.contains(student_id).any():
+            for field in required_fields:
+                if inputs[field] is None or (isinstance(inputs[field], str) and inputs[field].strip() == ""):
+                    st.warning(f"Ensure all required information are filled. {field} is required.")
+                    st.stop()
+
+            if data["Student ID"].astype(str).str.contains(inputs["Student ID"]).any():
                 st.warning("A student with this ID already exists.")
                 st.stop()
-            else:
-                new_data = pd.DataFrame([{
-                    "Name": name,
-                    "Student ID": student_id,
-                    "Sex": sex,
-                    "Age": age,
-                    "Date of Birth": date_of_birth,
-                    "Additional Notes": additional_notes
-                }])
 
-                updated_df = pd.concat([data, new_data], ignore_index=True)
-                conn.update(worksheet="sheet1", data=updated_df)
-                st.success("Student added successfully!")
+            new_data = pd.DataFrame([{
+                "Name": inputs["Name"],
+                "Student ID": inputs["Student ID"],
+                "Sex": inputs["Sex"],
+                "Age": inputs["Age"],
+                "Date of Birth": inputs["Date of Birth"].strftime('%Y/%m/%d'),  # Format the date
+                "Additional Notes": inputs["Additional Notes"]
+            }])
+
+            updated_df = pd.concat([data, new_data], ignore_index=True)
+            conn.update(worksheet="sheet1", data=updated_df)
+            st.success("Student added successfully!")
                 
 
 def remove_data(data):
@@ -97,9 +114,9 @@ def remove_data(data):
     target_student_id = st.text_input("Enter Student ID to remove:")
 
     if st.button("Remove Student"):
-        data_filtered = data[data["Student ID"] == int(target_student_id)]
+        data_filtered = data[data["Student ID"] == target_student_id]
         if not data_filtered.empty:
-            updated_df = data[data["Student ID"] != int(target_student_id)]
+            updated_df = data[data["Student ID"] != target_student_id]
             conn.update(worksheet="sheet1", data=updated_df)
             st.success(f"Student with ID {target_student_id} removed successfully!")
         else:
@@ -112,7 +129,8 @@ def filter_search_data(data):
 
     if st.button("Search"):
         filtered_data = data[data.apply(lambda row: search_term.lower() in row.astype(str).str.lower().values, axis=1)]
-        st.dataframe(filtered_data)
+        filtered_data.index += 1
+        st.dataframe(filtered_data, height=300)
 
 def help():
     option = st.selectbox('Help?', ['--Select--', 'Forgot username', 'Forgot password', 'New register'])
@@ -154,13 +172,14 @@ def help():
 
 def admin():
     data = read_data()
+    data.index += 1
 
     with st.container():
         st.title("Student Database Management")
         st.header("Current Student Data")
-        st.dataframe(data)
+        st.dataframe(data, height=300)
         #if data_changed:
-        #    st.dataframe(data)
+        #    st.dataframe(data, height=300)
 
 
     option = st.sidebar.selectbox(
@@ -177,13 +196,14 @@ def admin():
 
 def viewer():
     data = read_data()
+    data.index += 1
 
     with st.container():
         st.title("Student Database Management")
         st.header("Current Student Data")
-        st.dataframe(data)
+        st.dataframe(data, height=300)
         #if data_changed:
-        #    st.dataframe(data)
+        #    st.dataframe(data, height=300)
 
 
     option = st.sidebar.selectbox(
