@@ -7,9 +7,11 @@ from st_files_connection import FilesConnection
 import yaml
 from yaml.loader import SafeLoader
 
+with open('../.streamlit/config.yaml') as file:
+    config = yaml.load(file, Loader=SafeLoader)
 
-conn_config = st.connection('gcs', type=FilesConnection)
-config = conn_config.read("config.json", input_format="json", ttl=600)
+#conn_config = st.connection('gcs', type=FilesConnection)
+#config = conn_config.read("config.json", input_format="json", ttl=600)
 
 authenticator = stauth.Authenticate(
     config['credentials'],
