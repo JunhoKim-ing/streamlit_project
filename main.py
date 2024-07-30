@@ -19,11 +19,6 @@ authenticator = stauth.Authenticate(
     )
 
 conn_gsheet = st.connection("gsheets", type=GSheetsConnection)
-print(config['credentials'],
-    config['cookie']['name'],
-    config['cookie']['key'],
-    config['cookie']['expiry_days'],
-    config['pre-authorized'])
 
 SEX_TYPES = ["Male", "Female", "Others"]
 
@@ -46,6 +41,11 @@ def main():
     if st.session_state["authentication_status"]:
         st.write(f'Welcome *{st.session_state["name"]}*')
         st.title('Some content')
+        print(config['credentials'],
+    config['cookie']['name'],
+    config['cookie']['key'],
+    config['cookie']['expiry_days'],
+    config['pre-authorized'])
         try:
             if authenticator.update_user_details(st.session_state["username"]):
                 print(st.session_state['username'])
