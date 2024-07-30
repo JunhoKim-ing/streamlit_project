@@ -3,6 +3,7 @@ import pandas as pd
 import datetime
 from streamlit_gsheets import GSheetsConnection
 import streamlit_authenticator as stauth
+from st_files_connection import FilesConnection
 import yaml
 from yaml.loader import SafeLoader
 
@@ -17,13 +18,16 @@ authenticator = stauth.Authenticate(
     config['pre-authorized']
     )
 
-conn = st.connection("gsheets", type=GSheetsConnection)
+conn_gsheet = st.connection("gsheets", type=GSheetsConnection)
+conn_config = st.connection('gcs', type=FilesConnection)
+config = conn.read("config.yaml", input_format="yaml", ttl=600)
+print(config)
 
 SEX_TYPES = ["Male", "Female", "Others"]
 
 
 def read_data():
-    data = conn.read(worksheet="sheet1", usecols=list(range(6)), ttl=5)
+    data = conn_gsheet.read(worksheet="sheet1", usecols=list(range(6)), ttl=5)
     data = data.dropna(how="all")
     data['Date of Birth'] = pd.to_datetime(data['Date of Birth'], errors='coerce').dt.strftime('%Y/%m/%d')
     data['Student ID'] = data['Student ID'].astype(str)
@@ -34,7 +38,7 @@ def write_data(data):
     data['Date of Birth'] = pd.to_datetime(data['Date of Birth'], errors='coerce').dt.strftime('%Y/%m/%d')
     data['Student ID'] = data['Student ID'].astype(str)
     data['Student ID'] = data['Student ID'].apply(lambda x: x.split('.')[0] if '.' in x else x)
-    conn.write(data)
+    conn_gsheet.write(data)
     
 def main():
     if st.session_state["authentication_status"]:
@@ -105,7 +109,7 @@ def add_data(data):
             }])
 
             updated_df = pd.concat([data, new_data], ignore_index=True)
-            conn.update(worksheet="sheet1", data=updated_df)
+            conn_gsheet.update(worksheet="sheet1", data=updated_df)
             st.success("Student added successfully!")
                 
 
@@ -117,7 +121,7 @@ def remove_data(data):
         data_filtered = data[data["Student ID"] == target_student_id]
         if not data_filtered.empty:
             updated_df = data[data["Student ID"] != target_student_id]
-            conn.update(worksheet="sheet1", data=updated_df)
+            conn_gsheet.update(worksheet="sheet1", data=updated_df)
             st.success(f"Student with ID {target_student_id} removed successfully!")
         else:
             st.warning(f"No student found with ID {target_student_id}.")
