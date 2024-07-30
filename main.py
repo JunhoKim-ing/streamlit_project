@@ -19,9 +19,11 @@ authenticator = stauth.Authenticate(
     )
 
 conn_gsheet = st.connection("gsheets", type=GSheetsConnection)
-conn_config = st.connection('gcs', type=FilesConnection)
-config = conn_config.read("config.yaml", input_format="yaml", ttl=600)
-print(config)
+print(config['credentials'],
+    config['cookie']['name'],
+    config['cookie']['key'],
+    config['cookie']['expiry_days'],
+    config['pre-authorized'])
 
 SEX_TYPES = ["Male", "Female", "Others"]
 
