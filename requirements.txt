@@ -1,7 +1,7 @@
 streamlit==1.36.0
 numpy==1.26.4
-pandas
-st-gsheets-connection
-streamlit-authenticator
+pandas==1.5.3
+st-gsheets-connection==0.0.4
+streamlit-authenticator==0.3.3
 
 
