@@ -9,7 +9,7 @@ from yaml.loader import SafeLoader
 
 
 conn_config = st.connection('gcs', type=FilesConnection)
-config = conn.read("config.json", input_format="json", ttl=600)
+config = conn_config.read("config.json", input_format="json", ttl=600)
 
 authenticator = stauth.Authenticate(
     config['credentials'],
