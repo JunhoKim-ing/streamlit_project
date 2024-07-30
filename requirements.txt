@@ -3,5 +3,5 @@ numpy==1.26.4
 pandas==1.5.3
 st-gsheets-connection==0.0.4
 streamlit-authenticator==0.3.3
-
-
+gcsfs
+st-files-connection
