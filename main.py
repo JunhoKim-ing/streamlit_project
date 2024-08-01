@@ -24,20 +24,25 @@ authenticator = stauth.Authenticate(
 conn_gsheet = st.connection("gsheets", type=GSheetsConnection)
 
 SEX_TYPES = ["Male", "Female", "Others"]
-
+SECTOR_TYPES = ["Computer & Information Technology", "Electricity Installation", "Administration & Accounting", "Cooking & Service",
+                "Beauty & Hair Dressing", "Sewing", "Install & Repair Air Conditioner", "Others"]
 
 def read_data():
-    data = conn_gsheet.read(worksheet="sheet1", usecols=list(range(6)), ttl=5)
+    data = conn_gsheet.read(worksheet="sheet1", usecols=list(range(8)), ttl=5)
     data = data.dropna(how="all")
     data['Date of Birth'] = pd.to_datetime(data['Date of Birth'], errors='coerce').dt.strftime('%Y/%m/%d')
     data['Student ID'] = data['Student ID'].astype(str)
     data['Student ID'] = data['Student ID'].apply(lambda x: x.split('.')[0] if '.' in x else x)
+    data['Phone Number'] = data['Phone Number'].astype(str)
+    data['Phone Number'] = data['Phone Number'].apply(lambda x: x.split('.')[0] if '.' in x else x)
     return data
 
 def write_data(data):
     data['Date of Birth'] = pd.to_datetime(data['Date of Birth'], errors='coerce').dt.strftime('%Y/%m/%d')
     data['Student ID'] = data['Student ID'].astype(str)
     data['Student ID'] = data['Student ID'].apply(lambda x: x.split('.')[0] if '.' in x else x)
+    data['Phone Number'] = data['Phone Number'].astype(str)
+    data['Phone Number'] = data['Phone Number'].apply(lambda x: x.split('.')[0] if '.' in x else x)
     conn_gsheet.write(data)
     
 def main():
@@ -70,20 +75,22 @@ def main():
 
 def add_data(data):
     st.header("Add New Student")
-    required_fields = ["Name", "Student ID", "Sex", "Age", "Date of Birth"]
+    required_fields = ["Student ID", "Name", "Sex", "Age", "Date of Birth", "Sector"]
 
     with st.form("Add New Student"):
         inputs = {
-            "Name": st.text_input("Name*"),
             "Student ID": st.text_input("Student ID*"),
+            "Name": st.text_input("Name*"),
             "Sex": st.selectbox("Sex*", options=SEX_TYPES, index=None),
             "Age": st.number_input("Age*", min_value=0, max_value=120),
             "Date of Birth": st.date_input(
-                label="Date of Birth",
+                label="Date of Birth*",
                 value=datetime.date(2000, 1, 1),
                 min_value=datetime.date(1950, 1, 1),
                 max_value=datetime.date.today()
             ),
+            "Phone Number": st.text_input("Phone Number"),
+            "Sector": st.selectbox("Sector*", options=SECTOR_TYPES, index=None),
             "Additional Notes": st.text_area(label="Additional Notes")
         }
 
@@ -100,11 +107,13 @@ def add_data(data):
                 st.stop()
 
             new_data = pd.DataFrame([{
-                "Name": inputs["Name"],
                 "Student ID": inputs["Student ID"],
+                "Name": inputs["Name"],
                 "Sex": inputs["Sex"],
                 "Age": inputs["Age"],
                 "Date of Birth": inputs["Date of Birth"].strftime('%Y/%m/%d'),  # Format the date
+                "Phone Number": inputs["Phone Number"],
+                "Sector": inputs["Sector"],
                 "Additional Notes": inputs["Additional Notes"]
             }])
 
@@ -177,10 +186,14 @@ def help():
 def admin():
     data = read_data()
     data.index += 1
+    print(type(data['Student ID']))
+    print(type(data['Phone Number']))
 
     with st.container():
         st.title("Student Database Management")
         st.header("Current Student Data")
+        data['Student ID'] = data['Student ID'].astype(str)
+        data['Phone Number'] = data['Phone Number'].astype(str)
         st.dataframe(data, height=300)
         #if data_changed:
         #    st.dataframe(data, height=300)
@@ -205,6 +218,8 @@ def viewer():
     with st.container():
         st.title("Student Database Management")
         st.header("Current Student Data")
+        data['Student ID'] = data['Student ID'].astype(str)
+        data['Phone Number'] = data['Phone Number'].astype(str)
         st.dataframe(data, height=300)
         #if data_changed:
         #    st.dataframe(data, height=300)
@@ -221,4 +236,3 @@ def viewer():
 if __name__ == "__main__":
     authenticator.login()
     main()
-
