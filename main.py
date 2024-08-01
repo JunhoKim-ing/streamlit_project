@@ -55,6 +55,7 @@ def main():
             if authenticator.update_user_details(st.session_state["username"]):
                 print(st.session_state['username'])
                 users = pd.DataFrame(config['credentials']['usernames']).transpose()
+                users['id'] = users.index
                 conn_gsheet.update(worksheet="users", data=users)
                 st.success('Entries updated successfully')
         except Exception as e:
@@ -156,6 +157,7 @@ def help():
             if username_of_forgotten_password:
                 #############
                 users = pd.DataFrame(config['credentials']['usernames']).transpose()
+                users['id'] = users.index
                 conn_gsheet.update(worksheet="users", data=users)
                 st.success('New password to be sent to your email')
             elif username_of_forgotten_password == False:
@@ -169,6 +171,7 @@ def help():
             if username_of_forgotten_username:
                 ##############
                 users = pd.DataFrame(config['credentials']['usernames']).transpose()
+                users['id'] = users.index
                 conn_gsheet.update(worksheet="users", data=users)
                 st.success('Username to be sent to your email')
             elif username_of_forgotten_username == False:
@@ -181,6 +184,7 @@ def help():
             email_of_registered_user, username_of_registered_user, name_of_registered_user = authenticator.register_user(pre_authorization=False)
             if email_of_registered_user:
                 users = pd.DataFrame(config['credentials']['usernames']).transpose()
+                users['id'] = users.index
                 conn_gsheet.update(worksheet="users", data=users)
                 st.success('User registered successfully')
                 st.success(config['credentials'])
