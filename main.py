@@ -56,8 +56,6 @@ def main():
                 print(st.session_state['username'])
                 users = pd.DataFrame(config['credentials']).transpose
                 conn_gsheet.update(worksheet="users", data=users)
-                with open('./.streamlit/config.yaml', 'w') as file:
-                    yaml.dump(config, file, default_flow_style=False)
                 st.success('Entries updated successfully')
         except Exception as e:
             st.error(e)
