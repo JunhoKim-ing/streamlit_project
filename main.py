@@ -8,7 +8,7 @@ import streamlit_authenticator as stauth
 
 conn_gsheet = st.connection("gsheets", type=GSheetsConnection)
 
-users = conn_gsheet.read(worksheet="users", usecols=list(range(5)), ttl=5)
+users = conn_gsheet.read(worksheet="users", usecols=list(range(6)), ttl=5)
 users = users.set_index(users.keys()[0])
 
 config = {
