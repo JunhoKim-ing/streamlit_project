@@ -12,7 +12,7 @@ users = conn_gsheet.read(worksheet="users", usecols=list(range(5)), ttl=5)
 users = users.set_index(users.keys()[0])
 
 config = {
-    'credentials' : users.to_dict('index'),
+    'credentials' : {'usernames' : users.to_dict('index')},
     'pre-authorized' : conn_gsheet.read(worksheet="pre-authorized", usecols=list(range(1)), ttl=5)['emails'].to_list(),
     'cookie' : conn_gsheet.read(worksheet="cookie", usecols=list(range(3)), ttl=5).to_dict('records')[0]
 }
