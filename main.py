@@ -28,13 +28,23 @@ SECTOR_TYPES = ["Computer & Information Technology", "Electricity Installation",
                 "Beauty & Hair Dressing", "Sewing", "Install & Repair Air Conditioner", "Others"]
 
 def read_data():
+    def calculate_age(born):
+        today = datetime.date.today()
+        return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+    
     data = conn_gsheet.read(worksheet="sheet1", usecols=list(range(8)), ttl=5)
     data = data.dropna(how="all")
-    data['Date of Birth'] = pd.to_datetime(data['Date of Birth'], errors='coerce').dt.strftime('%Y/%m/%d')
+    data['Date of Birth'] = pd.to_datetime(data['Date of Birth'], errors='coerce')
+    data['Age'] = data['Date of Birth'].apply(calculate_age)
+    data['Date of Birth'] = data['Date of Birth'].dt.strftime('%Y/%m/%d')
+
     data['Student ID'] = data['Student ID'].astype(str)
     data['Student ID'] = data['Student ID'].apply(lambda x: x.split('.')[0] if '.' in x else x)
     data['Phone Number'] = data['Phone Number'].astype(str)
     data['Phone Number'] = data['Phone Number'].apply(lambda x: x.split('.')[0] if '.' in x else x)
+    
+    age_column = data.pop('Age')
+    data.insert(3, 'Age', age_column)
     return data
 
 def write_data(data):
@@ -75,21 +85,20 @@ def main():
 
 def add_data(data):
     st.header("Add New Student")
-    required_fields = ["Student ID", "Name", "Sex", "Age", "Date of Birth", "Sector"]
+    required_fields = ["Student ID", "Name", "Sex", "Date of Birth", "Sector"]
 
     with st.form("Add New Student"):
         inputs = {
             "Student ID": st.text_input("Student ID*"),
             "Name": st.text_input("Name*"),
             "Sex": st.selectbox("Sex*", options=SEX_TYPES, index=None),
-            "Age": st.number_input("Age*", min_value=0, max_value=120),
             "Date of Birth": st.date_input(
                 label="Date of Birth*",
                 value=datetime.date(2000, 1, 1),
                 min_value=datetime.date(1950, 1, 1),
                 max_value=datetime.date.today()
             ),
-            "Phone Number": st.text_input("Phone Number"),
+            "Phone Number": st.text_input("Phone Number (Ex. 000-0000-0000)"),
             "Sector": st.selectbox("Sector*", options=SECTOR_TYPES, index=None),
             "Additional Notes": st.text_area(label="Additional Notes")
         }
@@ -110,7 +119,6 @@ def add_data(data):
                 "Student ID": inputs["Student ID"],
                 "Name": inputs["Name"],
                 "Sex": inputs["Sex"],
-                "Age": inputs["Age"],
                 "Date of Birth": inputs["Date of Birth"].strftime('%Y/%m/%d'),  # Format the date
                 "Phone Number": inputs["Phone Number"],
                 "Sector": inputs["Sector"],
@@ -118,6 +126,8 @@ def add_data(data):
             }])
 
             updated_df = pd.concat([data, new_data], ignore_index=True)
+            updated_df = updated_df.drop(columns=['Age'])
+            
             conn_gsheet.update(worksheet="sheet1", data=updated_df)
             st.success("Student added successfully!")
                 
@@ -130,6 +140,8 @@ def remove_data(data):
         data_filtered = data[data["Student ID"] == target_student_id]
         if not data_filtered.empty:
             updated_df = data[data["Student ID"] != target_student_id]
+            updated_df = updated_df.drop(columns=['Age'])
+
             conn_gsheet.update(worksheet="sheet1", data=updated_df)
             st.success(f"Student with ID {target_student_id} removed successfully!")
         else:
@@ -138,12 +150,12 @@ def remove_data(data):
 
 def filter_search_data(data):
     st.header("Filter/Search Student Data")
-    search_term = st.text_input("Search by name or student ID:")
+    search_term = st.text_input("Search by Student Name or Student ID:")
 
     if st.button("Search"):
         filtered_data = data[data.apply(lambda row: search_term.lower() in row.astype(str).str.lower().values, axis=1)]
         filtered_data.index += 1
-        st.dataframe(filtered_data, height=300)
+        st.dataframe(filtered_data)
 
 def help():
     option = st.selectbox('Help?', ['--Select--', 'Forgot username', 'Forgot password', 'New register'])
@@ -186,8 +198,6 @@ def help():
 def admin():
     data = read_data()
     data.index += 1
-    print(type(data['Student ID']))
-    print(type(data['Phone Number']))
 
     with st.container():
         st.title("Student Database Management")
