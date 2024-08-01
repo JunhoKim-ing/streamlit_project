@@ -155,7 +155,7 @@ def help():
             username_of_forgotten_password, email_of_forgotten_password, new_random_password = authenticator.forgot_password()
             if username_of_forgotten_password:
                 #############
-                users = pd.DataFrame(config['credentials']['usernames'].transpose())
+                users = pd.DataFrame(config['credentials']['usernames']).transpose()
                 conn_gsheet.update(worksheet="users", data=users)
                 st.success('New password to be sent to your email')
             elif username_of_forgotten_password == False:
@@ -168,7 +168,7 @@ def help():
             username_of_forgotten_username, email_of_forgotten_username = authenticator.forgot_username()
             if username_of_forgotten_username:
                 ##############
-                users = pd.DataFrame(config['credentials']['usernames'].transpose())
+                users = pd.DataFrame(config['credentials']['usernames']).transpose()
                 conn_gsheet.update(worksheet="users", data=users)
                 st.success('Username to be sent to your email')
             elif username_of_forgotten_username == False:
@@ -180,7 +180,7 @@ def help():
         try:
             email_of_registered_user, username_of_registered_user, name_of_registered_user = authenticator.register_user(pre_authorization=False)
             if email_of_registered_user:
-                users = pd.DataFrame(config['credentials']['usernames'].transpose())
+                users = pd.DataFrame(config['credentials']['usernames']).transpose()
                 conn_gsheet.update(worksheet="users", data=users)
                 st.success('User registered successfully')
                 st.success(config['credentials'])
