@@ -178,6 +178,7 @@ def help():
         try:
             email_of_registered_user, username_of_registered_user, name_of_registered_user = authenticator.register_user(pre_authorization=False)
             if email_of_registered_user:
+                config['credentials'] = authenticator.authentication_controller.authentication_model.credentials
                 users = pd.DataFrame(config['credentials']).transpose
                 conn_gsheet.update(worksheet="users", data=users)
                 st.success('User registered successfully')
