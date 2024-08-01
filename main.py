@@ -3,15 +3,19 @@ import pandas as pd
 import datetime
 from streamlit_gsheets import GSheetsConnection
 import streamlit_authenticator as stauth
-from st_files_connection import FilesConnection
-import yaml
-from yaml.loader import SafeLoader
 
-with open('.streamlit/config.yaml') as file:
-    config = yaml.load(file, Loader=SafeLoader)
 
-#conn_config = st.connection('gcs', type=FilesConnection)
-#config = conn_config.read("config.json", input_format="json", ttl=600)
+
+conn_gsheet = st.connection("gsheets", type=GSheetsConnection)
+
+users = conn_gsheet.read(worksheet="users", usecols=list(range(5)), ttl=5)
+users = users.set_index(users.keys()[0])
+
+config = {
+    'credentials' : users.to_dict('index'),
+    'pre-authorized' : conn_gsheet.read(worksheet="pre-authorized", usecols=list(range(1)), ttl=5)['emails'].to_list(),
+    'cookie' : conn_gsheet.read(worksheet="cookie", usecols=list(range(1)), ttl=5)['emails'].to_dict('records')[0]
+}
 
 authenticator = stauth.Authenticate(
     config['credentials'],
@@ -20,8 +24,6 @@ authenticator = stauth.Authenticate(
     config['cookie']['expiry_days'],
     config['pre-authorized']
     )
-
-conn_gsheet = st.connection("gsheets", type=GSheetsConnection)
 
 SEX_TYPES = ["Male", "Female", "Others"]
 SECTOR_TYPES = ["Computer & Information Technology", "Electricity Installation", "Administration & Accounting", "Cooking & Service",
@@ -52,6 +54,8 @@ def main():
         try:
             if authenticator.update_user_details(st.session_state["username"]):
                 print(st.session_state['username'])
+                users = pd.DataFrame(config['credentials']).transpose
+                conn_gsheet.update(worksheet="users", data=users)
                 with open('./.streamlit/config.yaml', 'w') as file:
                     yaml.dump(config, file, default_flow_style=False)
                 st.success('Entries updated successfully')
@@ -153,8 +157,8 @@ def help():
             username_of_forgotten_password, email_of_forgotten_password, new_random_password = authenticator.forgot_password()
             if username_of_forgotten_password:
                 #############
-                with open('./.streamlit/config.yaml', 'w') as file:
-                    yaml.dump(config, file, default_flow_style=False)
+                users = pd.DataFrame(config['credentials']).transpose
+                conn_gsheet.update(worksheet="users", data=users)
                 st.success('New password to be sent to your email')
             elif username_of_forgotten_password == False:
                 st.error('Username not found')
@@ -176,8 +180,8 @@ def help():
         try:
             email_of_registered_user, username_of_registered_user, name_of_registered_user = authenticator.register_user(pre_authorization=False)
             if email_of_registered_user:
-                with open('./.streamlit/config.yaml', 'w') as file:
-                    yaml.dump(config, file, default_flow_style=False)
+                users = pd.DataFrame(config['credentials']).transpose
+                conn_gsheet.update(worksheet="users", data=users)
                 st.success('User registered successfully')
         except Exception as e:
             st.error(e)
