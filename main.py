@@ -50,7 +50,6 @@ def write_data(data):
 def main():
     if st.session_state["authentication_status"]:
         st.write(f'Welcome *{st.session_state["name"]}*')
-        st.title('Some content')
         try:
             if authenticator.update_user_details(st.session_state["username"]):
                 print(st.session_state['username'])
