@@ -183,6 +183,7 @@ def help():
                 users = pd.DataFrame(config['credentials'])
                 conn_gsheet.update(worksheet="users", data=users)
                 st.success('User registered successfully')
+                st.success(config['credentials'])
         except Exception as e:
             st.error(e)
 
