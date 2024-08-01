@@ -157,9 +157,8 @@ def help():
         try:
             username_of_forgotten_password, email_of_forgotten_password, new_random_password = authenticator.forgot_password()
             if username_of_forgotten_password:
-                #############
                 renew_user_information()
-                st.success('New password to be sent to your email')
+                st.success('New password is {}'.format(new_random_password))
             elif username_of_forgotten_password == False:
                 st.error('Username not found')
         except Exception as e:
@@ -169,9 +168,7 @@ def help():
         try:
             username_of_forgotten_username, email_of_forgotten_username = authenticator.forgot_username()
             if username_of_forgotten_username:
-                ##############
-                renew_user_information()
-                st.success('Username to be sent to your email')
+                st.success('Username is {}'.format(username_of_forgotten_username))
             elif username_of_forgotten_username == False:
                 st.error('Email not found')
         except Exception as e:
