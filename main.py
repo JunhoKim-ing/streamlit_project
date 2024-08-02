@@ -56,7 +56,13 @@ def write_data(data):
     data['Phone Number'] = data['Phone Number'].astype(str)
     data['Phone Number'] = data['Phone Number'].apply(lambda x: x.split('.')[0] if '.' in x else x)
     conn_gsheet.write(data)
-    
+
+def renew_user_information():
+    config['credentials'] = authenticator.authentication_controller.authentication_model.credentials
+    users = pd.DataFrame(config['credentials']['usernames']).transpose()
+    users = pd.concat([pd.DataFrame({'id':users.index}, index=users.index), users], axis=1)
+    conn_gsheet.update(worksheet="users", data=users)
+
 def main():
     if st.session_state["authentication_status"]:
         st.write(f'Welcome *{st.session_state["name"]}*')
@@ -83,11 +89,6 @@ def main():
         st.warning('Please enter your username and password')
         help()
 
-def renew_user_information():
-    config['credentials'] = authenticator.authentication_controller.authentication_model.credentials
-    users = pd.DataFrame(config['credentials']['usernames']).transpose()
-    users = pd.concat([pd.DataFrame({'id':users.index}, index=users.index), users], axis=1)
-    conn_gsheet.update(worksheet="users", data=users)
 
 def add_data(data):
     st.header("Add New Student")
