@@ -58,7 +58,7 @@ def write_data(data):
     conn_gsheet.write(data)
 
 def main():
-    st.error(conn_gsheet.keys())
+    st.error(conn_gsheet.read(worksheet=None, usecols=list(range(8)), ttl=5).keys())
     if st.session_state["authentication_status"]:
         st.write(f'Welcome *{st.session_state["name"]}*')
         try:
