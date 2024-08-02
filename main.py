@@ -62,8 +62,8 @@ def main():
         st.write(f'Welcome *{st.session_state["name"]}*')
         try:
             if authenticator.update_user_details(st.session_state["username"]):
-                print(st.session_state['username'])
                 renew_user_inforamtion()
+                print(st.session_state['username'])
                 st.success('Entries updated successfully')
         except Exception as e:
             st.error(e)
