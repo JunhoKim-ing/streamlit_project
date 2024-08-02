@@ -67,6 +67,7 @@ def main():
                 st.success('Entries updated successfully')
         except Exception as e:
             st.error(e)
+        st.success(config['credentials']['usernames'])
         if config["credentials"]["usernames"][st.session_state["name"]]["email"] in config["pre-authorized"]["emails"]:
             admin()
         else:
