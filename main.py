@@ -68,7 +68,7 @@ def main():
         except Exception as e:
             st.error(e)
         st.success(st.session_state)
-        if config["credentials"]["usernames"][st.session_state["name"]]["email"] in config["pre-authorized"]["emails"]:
+        if config["credentials"]["usernames"][st.session_state["username"]]["email"] in config["pre-authorized"]["emails"]:
             admin()
         else:
             viewer()
