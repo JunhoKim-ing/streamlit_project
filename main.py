@@ -67,7 +67,7 @@ def main():
                 st.success('Entries updated successfully')
         except Exception as e:
             st.error(e)
-        st.success(config == authenticator.authentication_contraller.authentication_model.credentials)
+        st.success(config == authenticator.authentication_controller.authentication_model.credentials)
         if config["credentials"]["usernames"][st.session_state["name"]]["email"] in config["pre-authorized"]["emails"]:
             admin()
         else:
@@ -84,7 +84,7 @@ def main():
         help()
 
 def renew_user_information():
-    config['credentials'] = authenticator.authentication_contraller.authentication_model.credentials
+    config['credentials'] = authenticator.authentication_controller.authentication_model.credentials
     users = pd.DataFrame(config['credentials']['usernames']).transpose()
     users = pd.concat([pd.DataFrame({'id':users.index}, index=users.index), users], axis=1)
     conn_gsheet.update(worksheet="users", data=users)
