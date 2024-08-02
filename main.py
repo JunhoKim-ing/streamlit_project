@@ -34,7 +34,7 @@ def read_data():
         today = datetime.date.today()
         return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
     
-    data = conn_gsheet.read(worksheet="sheet1", usecols=list(range(8)), ttl=5)
+    data = conn_gsheet.read(worksheet="students", usecols=list(range(8)), ttl=5)
     data = data.dropna(how="all")
     data['Date of Birth'] = pd.to_datetime(data['Date of Birth'], errors='coerce')
     data['Age'] = data['Date of Birth'].apply(calculate_age)
@@ -133,7 +133,7 @@ def add_data(data):
             updated_df = pd.concat([data, new_data], ignore_index=True)
             updated_df = updated_df.drop(columns=['Age'])
             
-            conn_gsheet.update(worksheet="sheet1", data=updated_df)
+            conn_gsheet.update(worksheet="students", data=updated_df)
             st.success("Student added successfully!")
                 
 
@@ -147,7 +147,7 @@ def remove_data(data):
             updated_df = data[data["Student ID"] != target_student_id]
             updated_df = updated_df.drop(columns=['Age'])
 
-            conn_gsheet.update(worksheet="sheet1", data=updated_df)
+            conn_gsheet.update(worksheet="students", data=updated_df)
             st.success(f"Student with ID {target_student_id} removed successfully!")
         else:
             st.warning(f"No student found with ID {target_student_id}.")
