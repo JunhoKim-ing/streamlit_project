@@ -83,6 +83,7 @@ def main():
         help()
 
 def renew_user_information():
+    config['credentials'] = authenticator.authentication_contraller.authentication_model.credentials
     users = pd.DataFrame(config['credentials']['usernames']).transpose()
     users = pd.concat([pd.DataFrame({'id':users.index}, index=users.index), users], axis=1)
     conn_gsheet.update(worksheet="users", data=users)
