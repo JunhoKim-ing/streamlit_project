@@ -57,23 +57,16 @@ def write_data(data):
     data['Phone Number'] = data['Phone Number'].apply(lambda x: x.split('.')[0] if '.' in x else x)
     conn_gsheet.write(data)
 
-def renew_user_information():
-    config['credentials'] = authenticator.authentication_controller.authentication_model.credentials
-    users = pd.DataFrame(config['credentials']['usernames']).transpose()
-    users = pd.concat([pd.DataFrame({'id':users.index}, index=users.index), users], axis=1)
-    conn_gsheet.update(worksheet="users", data=users)
-
 def main():
     if st.session_state["authentication_status"]:
         st.write(f'Welcome *{st.session_state["name"]}*')
         try:
             if authenticator.update_user_details(st.session_state["username"]):
-                renew_user_inforamtion()
+                renew_user_information()
                 print(st.session_state['username'])
                 st.success('Entries updated successfully')
         except Exception as e:
             st.error(e)
-        st.success(config == authenticator.authentication_controller.authentication_model.credentials)
         if config["credentials"]["usernames"][st.session_state["name"]]["email"] in config["pre-authorized"]["emails"]:
             admin()
         else:
@@ -89,6 +82,11 @@ def main():
         st.warning('Please enter your username and password')
         help()
 
+def renew_user_information():
+    config['credentials'] = authenticator.authentication_controller.authentication_model.credentials
+    users = pd.DataFrame(config['credentials']['usernames']).transpose()
+    users = pd.concat([pd.DataFrame({'id':users.index}, index=users.index), users], axis=1)
+    conn_gsheet.update(worksheet="users", data=users)
 
 def add_data(data):
     st.header("Add New Student")
