@@ -68,6 +68,7 @@ def main():
         except Exception as e:
             st.error(e)
         st.success(config)
+        st.success(authenticator.authentication_contraller.authentication_model.credentials)
         if config["credentials"]["usernames"][st.session_state["name"]]["email"] in config["pre-authorized"]["emails"]:
             admin()
         else:
